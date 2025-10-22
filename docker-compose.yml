@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  scanner:
+    build:
+      context: ./scanner
+    container_name: scanner
+    environment:
+      - PORT=5000
+      - SCANNER_DB_PATH=/data/scans.db
+    volumes:
+      - scanner-data:/data
+    networks:
+      - security-net
+    # Give the scanner service access to the Docker socket if you want to scan
+    # local images on the host.  Commented out by default for safety.
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+
+  ui:
+    build:
+      context: ./ui
+    container_name: security-ui
+    ports:
+      - "8081:80"
+    depends_on:
+      - scanner
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    driver: bridge
+
+volumes:
+  scanner-data:
+    driver: local
+  trivy-cache:
